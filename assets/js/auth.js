@@ -3,11 +3,14 @@ google.addScope("https://www.googleapis.com/auth/plus.login");
 google.addScope("https://www.googleapis.com/auth/admin.directory.customer.readonly");
 
 var token = localStorage.getItem(token);
-
+var user;
 
 if (localStorage.getItem("token") === null) {
 	loginGoogle();
+} else {
+	//loadLobby();
 }
+
 function loginGoogle() {
 	firebase.auth().signInWithPopup(google).then(function(result) {
 		if (result.credential) {
@@ -15,7 +18,7 @@ function loginGoogle() {
 			localStorage.setItem(token);
 			console.log(result.user);
 		}
-		var user = result.user;
+		user = result.user;
 	}).catch(function(error) {
 		var errorCode = error.code;
 		var errorMessage = error.message;
