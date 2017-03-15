@@ -5,6 +5,9 @@ google.addScope("https://www.googleapis.com/auth/admin.directory.customer.readon
 var token = localStorage.getItem(token);
 
 
+if (localStorage.getItem("token") === null) {
+	loginGoogle();
+}
 function loginGoogle() {
 	firebase.auth().signInWithPopup(google).then(function(result) {
 		if (result.credential) {
