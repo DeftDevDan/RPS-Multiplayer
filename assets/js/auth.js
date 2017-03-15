@@ -1,8 +1,10 @@
+import fb from '../../index.html';
+
 var google = new firebase.auth.GoogleAuthProvider();
 google.addScope("https://www.googleapis.com/auth/plus.login");
 google.addScope("https://www.googleapis.com/auth/admin.directory.customer.readonly");
 
-var token = localStorage.getItem(token);
+var token;
 var user;
 
 if (localStorage.getItem("token") === null) {
