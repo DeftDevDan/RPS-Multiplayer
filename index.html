@@ -7,9 +7,25 @@
 	<title>RPS Game</title>
 </head>
 <body>
+	<button onClick="loginGoogle()">Sign In With Google</button>
+
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+	<script src="https://www.gstatic.com/firebasejs/3.7.2/firebase.js"></script>
 	<script src="assets/js/rps.js"></script>
 	<script src="assets/js/lobby.js"></script>
 	<script src="assets/js/chat.js"></script>
+
+	<script>
+	  // Initialize Firebase
+	  var config = {
+	    apiKey: "AIzaSyA8bRhWzQ4IctzbS0RuCEO9EO3NjWwOW8M",
+	    authDomain: "rps-game-54f23.firebaseapp.com",
+	    databaseURL: "https://rps-game-54f23.firebaseio.com",
+	    storageBucket: "rps-game-54f23.appspot.com",
+	    messagingSenderId: "367644462259"
+	  };
+	  firebase.initializeApp(config);
+	  var database = firebase.database();
+	</script>
 </body>
 </html>
