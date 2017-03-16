@@ -1,26 +1,31 @@
-import fb from '../../index.html';
-
+window.onload=start;
 var google = new firebase.auth.GoogleAuthProvider();
 google.addScope("https://www.googleapis.com/auth/plus.login");
 google.addScope("https://www.googleapis.com/auth/admin.directory.customer.readonly");
-
-var token;
-var user;
-
-if (localStorage.getItem("token") === null) {
-	loginGoogle();
-} else {
-	//loadLobby();
+var user, prof;
+function start() {
+	user = localStorage.getItem("user");
+	prof = localStorage.getItem("picture");
+	if (localStorage.getItem("user") !== null) {
+		$("#logCheck").html("Logout");
+		$("#logCheck").attr("onClick", "signOut()");
+		loadLobby();
+	}
 }
+
 
 function loginGoogle() {
 	firebase.auth().signInWithPopup(google).then(function(result) {
 		if (result.credential) {
-			token = result.credential.accessToken;
-			localStorage.setItem(token);
-			console.log(result.user);
+			var token = result.credential.accessToken;
+			$("#logCheck").html("Logout");
+			$("#logCheck").attr("onClick", "signOut()");
+			loadLobby();
 		}
 		user = result.user;
+		localStorage.setItem("user", user.displayName);
+		localStorage.setItem("picture", user.photoURL);
+		console.log(user);
 	}).catch(function(error) {
 		var errorCode = error.code;
 		var errorMessage = error.message;
@@ -34,8 +39,9 @@ function loginGoogle() {
 
 function signOut() {
 	firebase.auth().signOut().then(function() {
-		localStorage.removeItem("token");
+		localStorage.removeItem("user");
+		location.reload();
 	}).catch(function(error) {
-
+		console.log(error);
 	});
 }
