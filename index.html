@@ -7,13 +7,26 @@
 	<title>RPS Game</title>
 </head>
 <body>
-	<button onClick="loginGoogle()">Sign In With Google</button>
-
+	<div id="top">
+	<button id="logCheck" onClick="loginGoogle()">Login</button>
+	</div>
+	<div id="left" class = "col-md-2">
+		<div id="stats">
+		</div>
+		<div id="opponentStats">
+		</div>
+	</div>
+	<div id="middle" class = "col-md-6">
+	</div>
+	<div id="right" class = "col-md-4">
+	</div>
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
 	<script src="https://www.gstatic.com/firebasejs/3.7.2/firebase.js"></script>
+	<script src="assets/js/auth.js"></script>
 	<script src="assets/js/rps.js"></script>
 	<script src="assets/js/lobby.js"></script>
 	<script src="assets/js/chat.js"></script>
+	<script src="assets/js/leave.js"></script>
 
 	<script>
 	  // Initialize Firebase
