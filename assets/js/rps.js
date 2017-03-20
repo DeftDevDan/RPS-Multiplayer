@@ -1,7 +1,10 @@
 function loadGame() {
 	$("#right").empty();
-	$("#center").empty();
+	$("#middle").empty();
 	loadChatRight();
+	database.ref("gameChat/" + chatKey).once("value", function(snapshot) {
+		gameChat(snapshot);
+	});
 
 	var oppTitle = $("<h1>");
 	var oppStats = $("<div>");
@@ -19,18 +22,20 @@ function loadGame() {
 	var gameDiv = $("<div>").attr({
 		id: gameName
 	});
-	var rock = $("<button>").attr({
+	var rock = $("<button>").html("rock").attr({
 		id: "rock",
 		onClick: "ready(0)"
 	});
-	var paper = $("<button>").attr({
+	var paper = $("<button>").html("paper").attr({
 		id: "paper",
 		onClick: "ready(1)"
 	});
-	var scissors = $("<button>").attr({
+	var scissors = $("<button>").html("scissors").attr({
 		id: "scissors",
 		onClick: "ready(2)"
 	});
+
+	$("#middle").append(gameDiv, rock, paper, scissors);
 }
 
 function ready(choice) {

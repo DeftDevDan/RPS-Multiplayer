@@ -136,6 +136,11 @@ function roomExist(rooms, roomName, type) {
 		newRef.push(newData);
 		join(roomName, 1);
 		addBtn(roomName);
+		database.ref("gameChat").push({
+			gameName: gameName,
+			user: "",
+			message: ""
+		});
 	}
 }
 
