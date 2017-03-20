@@ -2,17 +2,23 @@ window.onload=start;
 var google = new firebase.auth.GoogleAuthProvider();
 google.addScope("https://www.googleapis.com/auth/plus.login");
 google.addScope("https://www.googleapis.com/auth/admin.directory.customer.readonly");
-var user, prof;
-function start() {
-	user = localStorage.getItem("user");
-	prof = localStorage.getItem("picture");
-	if (localStorage.getItem("user") !== null) {
-		$("#logCheck").html("Logout");
-		$("#logCheck").attr("onClick", "signOut()");
-		loadLobby();
-	}
-}
+var guser, prof, gmail;
 
+function start() {
+	firebase.auth().onAuthStateChanged(function(user) {
+		console.log(user);
+	  if (user) {
+	    $("#logCheck").html("Logout");
+		$("#logCheck").attr("onClick", "signOut()");
+		guser = user;
+		prof = guser.photoURL;
+		gmail = guser.email;
+		loadLobby();
+	  } else {
+	    loginGoogle();
+	  }
+	});
+}
 
 function loginGoogle() {
 	firebase.auth().signInWithPopup(google).then(function(result) {
@@ -20,12 +26,11 @@ function loginGoogle() {
 			var token = result.credential.accessToken;
 			$("#logCheck").html("Logout");
 			$("#logCheck").attr("onClick", "signOut()");
+			checkUser();
 			loadLobby();
 		}
-		user = result.user;
-		localStorage.setItem("user", user.displayName);
-		localStorage.setItem("picture", user.photoURL);
-		console.log(user);
+		guser = result.user;
+		console.log(guser);
 	}).catch(function(error) {
 		var errorCode = error.code;
 		var errorMessage = error.message;
@@ -39,9 +44,43 @@ function loginGoogle() {
 
 function signOut() {
 	firebase.auth().signOut().then(function() {
-		localStorage.removeItem("user");
+		localStorage.clear();
 		location.reload();
 	}).catch(function(error) {
+
 		console.log(error);
 	});
+}
+
+function checkUser() {
+	database.ref('users').once('value', function(snapshot) {
+		userExist(snapshot.val());
+	});
+}
+
+function userExist(usersRef) {
+	var exists = false;
+	for(var key in usersRef) {
+		if(usersRef[key].email === gmail) {
+			exists = true;
+		} else {
+
+		}
+	}
+
+	if(exists) {
+	} else {
+		database.ref("users").push({
+			email: gmail,
+			name: guser.displayName,
+			pic: prof,
+			wins: 0,
+			losses: 0,
+			ties: 0,
+			rock: 0,
+			paper: 0,
+			scissors: 0,
+			total: 0
+		});
+	}	
 }
