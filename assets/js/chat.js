@@ -1,5 +1,5 @@
 function loadChatCenter() {
-	$("#left").empty();
+	$("#middle").empty();
 	loadChat("#middle");
 }
 function loadChatRight() {
