@@ -18,6 +18,9 @@ function start() {
 	    loginGoogle();
 	  }
 	});
+	database.ref("chat").on("value", function(snapshot) {
+		updateChat(snapshot);
+	});
 }
 
 function loginGoogle() {

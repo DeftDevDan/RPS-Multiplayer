@@ -29,7 +29,7 @@ function loadLobby() {
 	$("#right").append(roomBtn);
 
 	database.ref("rooms").on("value", function(snapshot) {
-		if(inGame = false){
+		if(inGame === false){
 			$("#roomDiv").empty();
 			loadRooms(snapshot.val());
 		}	
@@ -39,7 +39,6 @@ function loadLobby() {
 }
 
 function loadRooms(snapshot) {
-	console.log("something happened");
 	var roomName;
 	for (var key in snapshot) {
 		if(snapshot[key].playerCount < 2) {
@@ -70,7 +69,25 @@ function loadStats(snap) {
 	$(scissors).html("<strong>scissors: </strong>" + Math.floor(userInfo.scissors/userInfo.total * 100) + "%");
 	$("#stats").append(wins, losses, ties, rock, paper, scissors);
 
-	statSend.push(userInfo.wins, userInfo.losses, userInfo.ties, Math.floor(userInfo.rock/userInfo.total * 100), Math.floor(userInfo.paper/userInfo.total * 100), Math.floor(userInfo.scissors/userInfo.total * 100));
+	var ro, pap, scis;
+	if(userInfo.rock !== 0) {
+		ro = Math.floor(userInfo.rock/userInfo.total * 100);
+	} else {
+		ro = 0;
+	}
+	if(userInfo.paper !== 0) {
+		pap = Math.floor(userInfo.paper/userInfo.total * 100);
+	} else {
+		pap = 0;
+	}
+	if(userInfo.scissors !== 0) {
+		scis = Math.floor(userInfo.scissors/userInfo.total * 100);
+	} else {
+		scis = 0;
+	}
+
+
+	statSend.push(userInfo.wins, userInfo.losses, userInfo.ties, ro, pap, scis);
 }
 
 //When player chooses the make a new game room, this will prompt for a game room name, then make sure that the name has not already been taken and makes the game room
@@ -90,7 +107,6 @@ function createRoom() {
 //This checks to see if the room exists in the database, if the game name does not exist, it creates a new game room and sets the properties, if the game room does exist, it runs the gameExists() function
 function roomExist(rooms, roomName, type) {
 	var exists = false;
-	console.log(roomName);
 	for (var key in rooms) {
 		if (rooms[key].roomName === roomName) {
 			gameExists();
@@ -114,11 +130,17 @@ function roomExist(rooms, roomName, type) {
 			p1Ready: 0,
 			p2Ready: 0,
 			ties: 0,
-			stats: statSend
+			p1Stats: statSend,
+			p2Stats: []
 		};
 		newRef.push(newData);
 		join(roomName, 1);
 		addBtn(roomName);
+		database.ref("gameChat").push({
+			gameName: gameName,
+			user: "",
+			message: ""
+		});
 	}
 }
 
@@ -162,6 +184,7 @@ function addPlayer(snap, player) {
 		} else if (snap[key].roomName === gameName && player === 2) {
 			database.ref("rooms/" + key).update({player2: guser.displayName});
 			database.ref("rooms/" + key).update({playerCount: 2});
+			database.ref("rooms/" + key).update({p2Stats: statSend})
 			playerNum = 2;
 		}
 	}
