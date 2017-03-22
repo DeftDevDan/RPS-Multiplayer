@@ -18,7 +18,6 @@ function start() {
 
 
 	firebase.auth().onAuthStateChanged(function(user) {
-		console.log(user);
 	  if (user) {
 	    $("#logCheck").html("Logout");
 		$("#logCheck").attr("onClick", "signOut()");
@@ -86,7 +85,16 @@ function userExist(usersRef) {
 	if(exists) {
 	} else {
 		database.ref("users").push({
-			
+			email: gmail,
+			name: guser.displayName,
+			pic: prof,
+			wins: 0,
+			losses: 0,
+			ties: 0,
+			rock: 0,
+			paper: 0,
+			scissors: 0,
+			total: 0
 		});
 	}	
 }
