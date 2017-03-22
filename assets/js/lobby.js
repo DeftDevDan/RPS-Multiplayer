@@ -1,6 +1,6 @@
 var inGame = false;
-var gameName, playerNum;
-var statSend=[];
+var gameName, playerNum, gameKey, chatRoute, roomRoute, gameLoaded = false, userPath;
+
 function loadLobby() {
 	var profPic = $("<img>");
 	$(profPic).attr("src", prof);
@@ -33,7 +33,7 @@ function loadLobby() {
 			$("#roomDiv").empty();
 			loadRooms(snapshot.val());
 		}	
-	});
+	});		
 
 	loadChatCenter();
 }
@@ -47,11 +47,130 @@ function loadRooms(snapshot) {
 	}
 }
 
+//Button created on line 22
+function createRoom() {
+	//clearRooms();
+	//public/private();
+	var type = "public";
+	var response = prompt("Enter name of Game Room");
+	if (response === null) {
+		return;
+	}
+	database.ref("rooms").once("value", function(snapshot) {
+		roomExist(snapshot.val(), response.toUpperCase(), type);
+	});
+}
+
+function roomExist(rooms, roomName, type) {
+	var exists = false;
+	for (var key in rooms) {
+		if (rooms[key].roomName === roomName) {
+			gameExists(); //line 110
+			exists = true;
+		}
+	}
+
+	if (exists) {
+	}else {
+		database.ref("rooms").push({
+			roomName: roomName,
+			type: type,
+			ready: {
+				p1ready: 0,
+				p2ready:0,
+				p1choice: 0,
+				p2choice: 0
+			},
+			p1Wins: 0,
+			p2Wins: 0,
+			ties: 0,
+			p1: {
+				name: "",
+			},
+			p2: {
+				name: "",
+			},
+			playerCount:1,
+			chat: {
+				user: guser.displayName,
+				msg: "joined!"
+			},
+		}),
+		join(roomName, 1);
+		addBtn(roomName); //line 99
+	}
+}
+
+function addBtn(roomName) {
+	var btn = $("<button>");
+	$(btn).html(roomName).attr({
+		onClick: "join(\""+roomName+"\", 2)",
+		id: "\"" + roomName + "\""
+	});
+	$("#roomDiv").append(btn);
+	$("#roomDiv").append("<br>");
+}
+
+//If the game exists, this function will alert the player and restart the game name choosing cycle
+function gameExists() {
+	alert("Game Name Exists, Try Again");
+	createRoom();
+}
+
+//the player joins the game room, gets a snapshot to run the addPlayer function and passes the desire player number
+function join(roomName, player) {
+	gameName = roomName;
+	if (inGame === false) {
+		if (player === 1) {
+			database.ref("rooms").on("value", function(snapshot) {
+				addPlayer(snapshot.val(), 1);
+				inGame = true;
+			});		
+		} else {
+			database.ref("rooms").on("value", function(snapshot) {
+				addPlayer(snapshot.val(), 2);
+				inGame = true;
+			});	
+		}
+	}
+
+}
+
+//addPlayer adds player name to the desired game room
+function addPlayer(snap, player) {
+	for(var key in snap) {
+		if (snap[key].roomName === gameName && player === 1) {
+			database.ref("rooms/" + key + "/p1").update({name: guser.displayName});
+			playerNum = 1;
+		} else if (snap[key].roomName === gameName && player === 2) {
+			database.ref("rooms/" + key + "/p2").update({name: guser.displayName});
+			database.ref("rooms/" + key).update({playerCount: 2});
+			playerNum = 2;			
+		}
+		chatRoute = "rooms/" + key + "/chat";
+		roomRoute = "rooms/" + key;
+	}
+	if(gameLoaded === false) {
+		loadGame();
+	}
+}
+
+function gameChat(snap) {
+	var msg = snap.msg;
+	var user = snap.user;
+	if(msg !== null) {
+		var newMsg = $("<li>");
+		$(newMsg).html("<strong>" + user + ":</strong>" + msg);	
+		$("#messagesRight").append(newMsg);		
+	}
+}
+
 function loadStats(snap) {
 	var userInfo;
 	for (var key in snap) {
 		if (snap[key].email === gmail) {
 			userInfo = snap[key];
+			userPath = "users/" + key;
 		}
 	}
 	var wins = $("<h3>");
@@ -85,109 +204,4 @@ function loadStats(snap) {
 	} else {
 		scis = 0;
 	}
-
-
-	statSend.push(userInfo.wins, userInfo.losses, userInfo.ties, ro, pap, scis);
-}
-
-//When player chooses the make a new game room, this will prompt for a game room name, then make sure that the name has not already been taken and makes the game room
-function createRoom() {
-	//clearRooms();
-	//public/private();
-	var type = "public";
-	var response = prompt("Enter name of Game Room");
-	if (response === null) {
-		return;
-	}
-	database.ref("rooms").once("value", function(snapshot) {
-		roomExist(snapshot.val(), response.toUpperCase(), type);
-	});
-}
-
-//This checks to see if the room exists in the database, if the game name does not exist, it creates a new game room and sets the properties, if the game room does exist, it runs the gameExists() function
-function roomExist(rooms, roomName, type) {
-	var exists = false;
-	for (var key in rooms) {
-		if (rooms[key].roomName === roomName) {
-			gameExists();
-			exists = true;
-		}
-	}
-
-	if (exists) {
-	}else {
-		var newRef = database.ref("rooms");
-		var newData = {
-			roomName: roomName,
-			type: type,
-			player1: "",
-			player2: "",
-			playerCount: 1,
-			p1Wins: 0,
-			p2Wins: 0,
-			p1Choice: 0,
-			p2Choice: 0,
-			p1Ready: 0,
-			p2Ready: 0,
-			ties: 0,
-			p1Stats: statSend,
-			p2Stats: []
-		};
-		newRef.push(newData);
-		join(roomName, 1);
-		addBtn(roomName);
-		database.ref("gameChat").push({
-			gameName: gameName,
-			user: "",
-			message: ""
-		});
-	}
-}
-
-//If the game exists, this function will alert the player and restart the game name choosing cycle
-function gameExists() {
-	alert("Game Name Exists, Try Again");
-	createRoom();
-}
-
-function addBtn(roomName) {
-	var btn = $("<button>");
-	$(btn).html(roomName).attr({
-		onClick: "join(\""+roomName+"\", 2)",
-		id: "\"" + roomName + "\""
-	});
-	$("#roomDiv").append(btn);
-	$("#roomDiv").append("<br>");
-}
-
-//the player joins the game room, gets a snapshot to run the addPlayer function and passes the desire player number
-function join(roomName, player) {
-	gameName = roomName;
-	inGame = true;
-	if (player === 1) {
-		database.ref("rooms").on("value", function(snapshot) {
-			addPlayer(snapshot.val(), 1);
-		});		
-	} else {
-		database.ref("rooms").on("value", function(snapshot) {
-			addPlayer(snapshot.val(), 2);
-		});	
-	}
-}
-
-//addPlayer adds player name to the desired game room
-function addPlayer(snap, player) {
-	for(var key in snap) {
-		if (snap[key].roomName === gameName && player === 1) {
-			database.ref("rooms/" + key).update({player1: guser.displayName});
-			playerNum = 1;
-		} else if (snap[key].roomName === gameName && player === 2) {
-			database.ref("rooms/" + key).update({player2: guser.displayName});
-			database.ref("rooms/" + key).update({playerCount: 2});
-			database.ref("rooms/" + key).update({p2Stats: statSend})
-			playerNum = 2;
-		}
-	}
-
-	loadGame();
 }

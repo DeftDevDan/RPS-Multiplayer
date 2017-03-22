@@ -1,27 +1,55 @@
+var readyCheckCount = 0;
+var winCheck = false;
+
 function loadGame() {
 	$("#right").empty();
 	$("#middle").empty();
 	loadChatRight();
-	database.ref("gameChat/" + chatKey).once("value", function(snapshot) {
-		gameChat(snapshot);
-	});
-
-	var oppTitle = $("<h1>");
-	var oppStats = $("<div>");
-	var oppWins = $("<h3>");
-	var oppLosses = $("<h3>");
-	var oppTies = $("<h3>");
-	var oppRock = $("<h3>");
-	var oppPaper = $("<h3>");
-	var oppScissors = $("<h3>");
-
-	$("#opponentStats").append(oppTitle);
-	$("#opponentStats").append(oppStats);
-	$(oppStats).append(oppWins, oppLosses, oppTies, oppRock, oppPaper, oppScissors);
+	gameLoaded = true;
 
 	var gameDiv = $("<div>").attr({
 		id: gameName
 	});
+
+	var breaker = $("<br>");
+	var myWins = $("<div>").attr({
+		id: "myWins"
+	});
+	var myWinsHeader = $("<h2>").html("My Wins:");
+	var myWinsNum = $("<h3>").attr({
+		id: "myWinsNum"
+	});
+	$(myWins).append(myWinsHeader);
+	$(myWins).append(myWinsNum);
+	$(gameDiv).append(myWins);
+	var ties = $("<div>").attr({
+		id: "ties"
+	});
+	var tiesHeader = $("<h2>").html("Ties:");
+	var tiesNum = $("<h3>").attr({
+		id: "tiesNum"
+	});
+
+	$(ties).append(tiesHeader);
+	$(ties).append(tiesNum);
+	$(gameDiv).append(ties);
+
+	var oppWins = $("<div>").attr({
+		id: "oppWins"
+	});
+	var oppWinsHeader = $("<h2>").html("Opponent Wins:");
+	var oppWinsNum = $("<h3>").attr({
+		id: "oppWinsNum"
+	});
+	$(oppWins).append(oppWinsHeader);
+	$(oppWins).append(oppWinsNum);
+	$(gameDiv).append(oppWins);
+
+	database.ref(roomRoute).on("value", function(snapshot) {
+		console.log("something is happening");
+		updateRoomStats(snapshot.val());
+	});
+
 	var rock = $("<button>").html("rock").attr({
 		id: "rock",
 		onClick: "ready(0)"
@@ -35,104 +63,200 @@ function loadGame() {
 		onClick: "ready(2)"
 	});
 
-	$("#middle").append(gameDiv, rock, paper, scissors);
-}
-
-function ready(choice) {
-	database.ref("rooms").on("value", function(snapshot) {
-		updateReady(snapshot.val(), choice);
+	$(gameDiv).append(rock,paper,scissors);
+	$("#middle").append(gameDiv);
+	database.ref(roomRoute + "/ready").on("value", function(snapshot) {
+		readyCheck(snapshot.val());
 	});
 }
 
-function updateReady(snapshot, choice) {
-	for(var key in snapshot) {
-		if (snapshot[key].roomName === gameName && playerNum === 1) {
-			database.ref("rooms/" + key).update({
-				p1Choice: choice,
-				p1Ready: 1
-			})
-		} else if (snapshot[key].roomName === gameName && playerNum === 2) {
-			database.ref("rooms/" + key).update({
-				p2Choice: choice,
-				p2Ready: 1
-			})
-		}
+function updateRoomStats(snap) {
+	var p1wins = snap.p1Wins;
+	var ties = snap.ties;
+	var p2wins = snap.p2Wins;
 
-		if(snapshot[key].gameName && snapshot[key].p1Ready === 1 && snapshot[key].p2Ready === 1) {
-			var result = whoWon(snapshot[key].p1Choice, snapshot[key].p2Choice);
-			if(result = 0) {
-				var ties = snapshot[key].ties;
-				ties++;
-				database.ref("rooms/" + key).update({
-					ties: ties
-				});
-			} else if(result = 1) {
-				var p1Wins = snapshot[key].p1Wins;
-				var p2Losses = snapshot[key].p2Losses;
-				p1Wins++;
-				p2Losses++;
-				database.ref("rooms/" + key).update({
-					p1Wins: p1Wins,
-					p2Losses: p2Losses
-				});
-			} else{
-				var p2Wins = snapshot[key].p2Wins;
-				var p1Losses = snapshot[key].p1Losses;
-				p2Wins++;
-				p1Losses++;
-				database.ref("rooms/" + key).update({
-					p2Wins: p2Wins,
-					p1Losses: p1Losses
-				});
-			}
-		}
+	console.log(p1wins);
+	console.log(p2wins);
+	console.log(ties);
+
+	if(playerNum === 1) {
+		$("#myWinsNum").html(p1wins);
+		$("#tiesNum").html(ties);
+		$("#oppWinsNum").html(p2wins);
+	} else if(playerNum === 2) {
+		$("#myWinsNum").html(p2wins);
+		$("#tiesNum").html(ties);
+		$("#oppWinsNum").html(p1wins);
+	}
+}
+
+function ready(choice) {
+	if (playerNum === 1) {
+		database.ref(roomRoute + "/ready").update({
+			p1choice: choice,
+			p1ready: 1
+		});
+	} else if(playerNum === 2) {
+		database.ref(roomRoute + "/ready").update({
+			p2choice: choice,
+			p2ready: 1
+		});
+	}
+}
+
+function readyCheck(snap) {
+	if(snap.p1ready === 1 && snap.p2ready === 1) {
+		database.ref(roomRoute + "/ready").update({
+			p1ready: 0,
+			p2ready: 0
+		});
+		whoWon(snap.p1choice, snap.p2choice);
 	}
 }
 
 function whoWon(p1, p2) {
 	if(p1 - p2 === 0) {
 		//tie
-		playerSnapshot(0);
-		return 0;
+		console.log("tie");
+		database.ref(roomRoute).once("value", function(snapshot) {
+			updateTie(snapshot.val(), p1);
+		});
 	} else if (p1 - p2 === 1 || p1 - p2 === -2) {
 		//p1 win
-		playerSnapshot(1);
-		return 1;
+		console.log("p1Win");
+		database.ref(roomRoute).once("value", function(snapshot) {
+			updateP1Win(snapshot.val(), p1);
+		});
 	} else {
 		//p2 win
-		playerSnapshot(2);
-		return 2;
-	}
-
-	//update wins, ties, losses
+		console.log("p2Win");
+		database.ref(roomRoute).once("value", function(snapshot) {
+			updateP2Win(snapshot.val(), p2);
+		});
+	}	
 }
 
-function playerSnapshot(winner) {
-	database.ref("users").once("value", function(snapshot) {
-		playerUpdate(snapshot.val());
+function updateTie(snap, choice) {
+	var ties;
+
+	ties = snap.ties;
+	ties++;
+
+	database.ref(roomRoute).update({
+		ties: ties
+	});
+
+	database.ref(userPath).once("value", function(snapshot) {
+		updateStats(snapshot.val(), 0, choice)
 	});
 }
 
-function playerUpdate(snapshot, winner) {
-	for(var key in snapshot) {
-		if (snapshot[key].email === gmail) {
-			var playa = snapshot[key];
-			if (winner === 0) {
-				ties = playa.ties;
-				database.ref("users/" + key).update({
-					ties: ties
-				});
-			} else if (winner === playerNum) {
-				wins = playa.wins;
-				database.ref("users/" + key).update({
-					wins: wins
-				});
-			} else {
-				losses = playa.losses;
-				database.ref("users/" + key).update({
-					losses: losses
-				});
-			}
-		}
+function updateP1Win(snap, choice) {
+	var wins;
+	var p2choice;
+
+	if(choice === 0) {
+		p2choice = 2;
+	} else if(choice === 1) {
+		p2choice = 0;
+	} else {
+		p2choice = 1;
 	}
+
+	wins = snap.p1Wins;
+	wins++;
+
+	database.ref(roomRoute).update({
+		p1Wins: wins
+	});
+
+	if(playerNum === 1) {
+		database.ref(userPath).once("value", function(snapshot) {
+			updateStats(snapshot.val(), 1, choice)
+		});
+	}else if (playerNum === 2) {
+		database.ref(userPath).once("value", function(snapshot) {
+			updateStats(snapshot.val(), 2, p2choice)
+		});
+	}
+}
+
+function updateP2Win(snap, choice) {
+	var wins;
+	var p1choice;
+
+	if(choice === 0) {
+		p1choice = 2;
+	} else if(choice === 1) {
+		p1choice = 0;
+	} else {
+		p1choice = 1;
+	}
+
+	wins = snap.p2Wins;
+	wins++;
+
+	database.ref(roomRoute).update({
+		p2Wins: wins
+	});
+
+	if(playerNum === 1) {
+		database.ref(userPath).once("value", function(snapshot) {
+			updateStats(snapshot.val(), 2, p1choice)
+		});
+	}else if (playerNum === 2) {
+		database.ref(userPath).once("value", function(snapshot) {
+			updateStats(snapshot.val(), 1, choice)
+		});
+	}
+}
+
+//snapshot will be for current user
+function updateStats(snap, result, choice) {
+//results: 0 = tie, 1 = win, 2 = loss
+	var wins, ties, losses, total, rock, paper, scissors;
+	if(snap.total === null) {
+		wins = 0;
+		ties = 0;
+		losses = 0;
+		total = 0;
+		rock = 0;
+		paper = 0;
+		scissors = 0;
+	} else {
+		wins = snap.wins;
+		ties = snap.ties;
+		losses = snap.losses;
+		total = snap.total;
+		rock = snap.rock;
+		paper = snap.paper;
+		scissors = snap.scissors;		
+	}
+
+	total++;
+	if (result === 0) {
+		ties++;
+	} else if (result === 1) {
+		wins++;
+	} else if (result === 2) {
+		losses++;
+	}
+
+	if (choice === 0) {
+		rock++;
+	} else if (choice === 1) {
+		paper++;
+	} else if (choice === 2) {
+		scissors++;
+	}
+
+	database.ref(userPath).update({
+		wins: wins,
+		ties: ties,
+		losses: losses,
+		total: total,
+		rock: rock,
+		paper: paper,
+		scissors: scissors
+	})
 }
