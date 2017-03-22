@@ -35,12 +35,13 @@ function loadChat(position) {
 	$(messages).append(messageList);
 
 	var chat = $("<form>");
-	var chatMessage = $("<input>").attr({
+	var chatMessage = $("<input>").addClass("col-xs-9").attr({
 		id: "chatMsg",
 		type: "text",
-		name: "message"
+		name: "message",
 	});
-	var sendMsg = $("<button>");
+	//$(chatMessage).css("width", 90%);
+	var sendMsg = $("<button>").addClass("col-xs-3");
 	$(sendMsg).html("Send").attr({
 		onClick: "msgSend(\"" + position + "\")"
 	});
