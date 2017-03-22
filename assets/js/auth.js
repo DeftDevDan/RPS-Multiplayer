@@ -2,9 +2,21 @@ window.onload=start;
 var google = new firebase.auth.GoogleAuthProvider();
 google.addScope("https://www.googleapis.com/auth/plus.login");
 google.addScope("https://www.googleapis.com/auth/admin.directory.customer.readonly");
-var guser, prof, gmail;
+var guser, prof, gmail, database;
+
 
 function start() {
+	var config = {
+	    apiKey: "AIzaSyA8bRhWzQ4IctzbS0RuCEO9EO3NjWwOW8M",
+	    authDomain: "rps-game-54f23.firebaseapp.com",
+	    databaseURL: "https://rps-game-54f23.firebaseio.com",
+	    storageBucket: "rps-game-54f23.appspot.com",
+	    messagingSenderId: "367644462259"
+	};
+	firebase.initializeApp(config);
+	database = firebase.database();
+
+
 	firebase.auth().onAuthStateChanged(function(user) {
 		console.log(user);
 	  if (user) {
@@ -74,16 +86,7 @@ function userExist(usersRef) {
 	if(exists) {
 	} else {
 		database.ref("users").push({
-			email: gmail,
-			name: guser.displayName,
-			pic: prof,
-			wins: 0,
-			losses: 0,
-			ties: 0,
-			rock: 0,
-			paper: 0,
-			scissors: 0,
-			total: 0
+			
 		});
 	}	
 }
