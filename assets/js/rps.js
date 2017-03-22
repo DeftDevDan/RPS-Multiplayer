@@ -7,6 +7,12 @@ function loadGame() {
 	loadChatRight();
 	gameLoaded = true;
 
+	var leaveGameBtn = $("<button>").html("Leave Game").attr({
+		onClick: "leaveGame()",
+		id: "leaveGameBtn"
+	});
+	$("#top").append(leaveGameBtn);
+
 	var gameDiv = $("<div>").attr({
 		id: gameName
 	});

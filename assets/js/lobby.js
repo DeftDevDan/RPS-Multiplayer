@@ -39,10 +39,12 @@ function loadLobby() {
 }
 
 function loadRooms(snapshot) {
-	var roomName;
 	for (var key in snapshot) {
 		if(snapshot[key].playerCount < 2) {
 			addBtn(snapshot[key].roomName);
+		}
+		if(snapshot[key].playerCount === 0) {
+			database.ref("rooms/" + key).remove();
 		}
 	}
 }
