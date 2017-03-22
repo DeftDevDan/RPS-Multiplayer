@@ -1,0 +1,44 @@
+li {
+	word-wrap: break-word;
+	list-style-type: none;
+}
+
+#messages {
+	height: 90vh;
+	border: 1px solid #000;
+	overflow-y:scroll;
+}
+
+#messagesRight{
+	height: 90vh;
+	border: 1px solid #000;
+	overflow-y:scroll;
+}
+
+#roomDiv {
+	height: 90vh;
+}
+
+#createRoomBtn{
+	width:100%;
+	background-color: green;
+	color: white;
+}
+
+.gameBtn {
+	display: block;
+	text-align:center;
+}
+
+.gameBtn button {
+	background-color: #ccc;
+	width: 80%;
+}
+
+#top {
+	text-align: right;
+}
+
+#game {
+	text-align: center;
+}

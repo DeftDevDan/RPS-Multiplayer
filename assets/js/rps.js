@@ -14,13 +14,13 @@ function loadGame() {
 	$("#top").append(leaveGameBtn);
 
 	var gameDiv = $("<div>").attr({
-		id: gameName
+		id: "game"
 	});
 
 	var breaker = $("<br>");
 	var myWins = $("<div>").attr({
 		id: "myWins"
-	});
+	}).addClass("col-xs-4");
 	var myWinsHeader = $("<h2>").html("My Wins:");
 	var myWinsNum = $("<h3>").attr({
 		id: "myWinsNum"
@@ -30,7 +30,7 @@ function loadGame() {
 	$(gameDiv).append(myWins);
 	var ties = $("<div>").attr({
 		id: "ties"
-	});
+	}).addClass("col-xs-4");
 	var tiesHeader = $("<h2>").html("Ties:");
 	var tiesNum = $("<h3>").attr({
 		id: "tiesNum"
@@ -42,7 +42,7 @@ function loadGame() {
 
 	var oppWins = $("<div>").attr({
 		id: "oppWins"
-	});
+	}).addClass("col-xs-4");
 	var oppWinsHeader = $("<h2>").html("Opponent Wins:");
 	var oppWinsNum = $("<h3>").attr({
 		id: "oppWinsNum"

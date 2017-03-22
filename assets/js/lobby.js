@@ -24,9 +24,10 @@ function loadLobby() {
 	$("#right").append(roomDiv);
 	var roomBtn = $("<button>");
 	$(roomBtn).attr({
-		onClick: "createRoom()"
+		onClick: "createRoom()",
+		id: "createRoomBtn"
 	}).html("Create Room");
-	$("#right").append(roomBtn);
+	$("#right").prepend(roomBtn);
 
 	database.ref("rooms").on("value", function(snapshot) {
 		if(inGame === false){
@@ -109,7 +110,9 @@ function addBtn(roomName) {
 		onClick: "join(\""+roomName+"\", 2)",
 		id: "\"" + roomName + "\""
 	});
-	$("#roomDiv").append(btn);
+	var btnDiv = $("<div>").addClass("gameBtn");
+	$(btnDiv).append(btn);
+	$("#roomDiv").append(btnDiv);
 	$("#roomDiv").append("<br>");
 }
 
