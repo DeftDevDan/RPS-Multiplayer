@@ -4,7 +4,7 @@ var gameName, playerNum, gameKey, chatRoute, roomRoute, gameLoaded = false, user
 function loadLobby() {
 	var profPic = $("<img>");
 	$(profPic).attr("src", prof);
-	$(profPic).addClass("img-circle img-responsive col-md-6");
+	$(profPic).addClass("img-circle img-responsive col-xs-6");
 	var userName = $("<h3>");
 	$(userName).attr("data-name", guser.displayName);
 	$(userName).html(guser.displayName);
